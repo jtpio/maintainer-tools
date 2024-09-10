@@ -40,6 +40,8 @@ runs:
         # Report again and fail if under threshold
         python -Iim coverage report --fail-under=${{inputs.fail_under}}
 
+        ls -lisah
+
     - name: Upload HTML report if check failed.
       uses: actions/upload-artifact@v4.3.6
       with:
