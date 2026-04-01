@@ -26,6 +26,13 @@ SCRIPT_TAG_PATTERN = re.compile(
     re.DOTALL,
 )
 
+# Template format: <template id="playwrightReportBase64">data:...</template>
+# Used by Playwright 1.59+ (microsoft/playwright#39821, for CSP compliance)
+TEMPLATE_TAG_PATTERN = re.compile(
+    r'(<template\s[^>]*id=["\']playwrightReportBase64["\'][^>]*>)(.*?)(</template>)',
+    re.DOTALL,
+)
+
 ASSIGNMENT_PREFIX = 'window.playwrightReportBase64 = "'
 ASSIGNMENT_SUFFIX = '";'
 
@@ -103,6 +110,10 @@ def extract_data_uri_from_html(html: str) -> tuple[str, str]:
         return match.group(0), match.group(3)
     # Try modern <script> element format (Playwright 1.41+)
     match = SCRIPT_TAG_PATTERN.search(html)
+    if match:
+        return match.group(0), match.group(2)
+    # Try <template> element format (Playwright 1.59+)
+    match = TEMPLATE_TAG_PATTERN.search(html)
     if match:
         return match.group(0), match.group(2)
     message = "Could not find window.playwrightReportBase64 assignment in HTML"
